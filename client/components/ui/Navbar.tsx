@@ -8,13 +8,8 @@ const Navbar = () => {
   // State to track if the user is logged in
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  // Toggle login state (simulating login/logout functionality)
-  const handleAuthToggle = () => {
-    setIsLoggedIn(!isLoggedIn);
-  };
-
   return (
-    <nav className=" shadow shadow-gray-300 w-full px-8 md:px-auto">
+    <nav className="shadow shadow-gray-300 w-full px-8 md:px-auto">
       <div className="md:h-16 h-28 mx-auto md:px-4 container flex items-center justify-between flex-wrap md:flex-nowrap">
         
         {/* Navigation Links */}
@@ -43,7 +38,7 @@ const Navbar = () => {
           <Button
             type="primary"
             icon={isLoggedIn ? <LogoutOutlined /> : <LoginOutlined />}
-            onClick={handleAuthToggle}
+
             className="flex items-center gap-2"
           >
             {isLoggedIn ? 'Logout' : 'Login'}
