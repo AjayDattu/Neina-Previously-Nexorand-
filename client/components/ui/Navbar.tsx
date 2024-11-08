@@ -1,7 +1,6 @@
 "use client";
 import Link from "next/link";
 import { Button, Menu, Dropdown, Avatar } from "antd";
-import { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/app/store/store";
 import { LoginOutlined, LogoutOutlined, UserOutlined } from "@ant-design/icons";
@@ -11,12 +10,15 @@ const Navbar = () => {
   const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state.auth.user);
   const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
+const handleLogout = () => {
+  dispatch(logout());
+  localStorage.removeItem("user");
 
-  const handleLogout = () => {
-    dispatch(logout());
-  };
+  // Redirect to the home page
+  window.location.href = "/";
+};
 
-  // Dropdown menu items for the logged-in user
+
   const menu = (
     <Menu>
       <Menu.Item key="profile">
@@ -38,14 +40,18 @@ const Navbar = () => {
             <Menu.Item key="dashboard">
               <Link href="/">Dashboard</Link>
             </Menu.Item>
-            <Menu.Item key="register">
-              <Link href="/Registration">Register</Link>
-            </Menu.Item>
-            <Menu.Item key="login">
-              <Link href="/Login">Login</Link>
-            </Menu.Item>
+            {!isAuthenticated && (
+              <div>
+                <Menu.Item key="register">
+                  <Link href="/Registration">Register</Link>
+                </Menu.Item>
+                <Menu.Item key="login">
+                  <Link href="/Login">Login</Link>
+                </Menu.Item>
+              </div>
+            )}
             <Menu.Item key="about">
-              <Link href="#">About</Link>
+              <Link href="/About">About</Link>
             </Menu.Item>
             <Menu.Item key="contact">
               <Link href="#">Contact</Link>

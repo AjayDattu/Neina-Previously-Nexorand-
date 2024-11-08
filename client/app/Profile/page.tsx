@@ -1,60 +1,81 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { RootState } from "../store/store"; // Adjust path as needed
-import { Card, Typography, Spin, Alert } from "antd";
-import axios from "axios";
+import { useDispatch } from "react-redux";
+import { Card, Typography, Spin, Alert, Button, Row, Col, Statistic } from "antd";
+import axios, { AxiosError } from "axios";
 import { logout } from "../store/authSlice"; // Import your logout action
 
 const { Title, Text } = Typography;
 
+interface UserData {
+  firstName: string;
+  lastName: string;
+  username: string;
+  email: string;
+  Points: number;
+}
+
+interface ErrorResponse {
+  message: string;
+}
+
 function Page() {
   const dispatch = useDispatch();
-  const [userData, setUserData] = useState<any>(null);
+  const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Access the token and user info from Redux state
-  const { username, password ,token} = JSON.parse(localStorage.getItem("user") || "{}");;
+  const storedUser = localStorage.getItem("user");
+  const { token } = storedUser ? JSON.parse(storedUser) : {};
 
   useEffect(() => {
-  const fetchUserData = async () => {
-    if (!token) return;
+    const fetchUserData = async () => {
+      if (!token) {
+        setError("Token is missing or invalid.");
+        setLoading(false);
+        return;
+      }
 
-   try {
-  setLoading(true);
-  console.log("Token:", token);
-  
-  // Send an empty body and set token in headers for authentication
-  const response = await axios.post(
-    "http://localhost:7000/api/user/v1/get-users-info",
-    {},
-    { headers: { Authorization: {token} } }
-  );
- const response = await axios.post('http://localhost:7000/api/user/v1/get-users-info', null, {
-        headers: {
-          'Content-Type': 'application/json', // Optional if not sending a body
-          'Authorization': `Bearer ${token}`, // Add token or other headers if needed
-        },
-      });
+      try {
+        setLoading(true);
+        console.log("Using token:", token);
 
-  // Handle response
-  setUserData(response.data);
-} catch (err) {
-  console.error("Error fetching user data:", err.response ? err.response.data : err.message);
-  setError(err.response ? err.response.data.message : "Failed to fetch user data. Please try again.");
-} finally {
-  setLoading(false);
-}
+        const response = await axios.post(
+          "http://localhost:7000/api/user/v1/get-users-info",
+          {},
+          {
+            headers: {
+              Authorization: token,
+            },
+          }
+        );
+         
+        setUserData(response.data.data); // Assuming the response has a 'data' field with user info
+      } catch (err: unknown) {
+        if (axios.isAxiosError(err)) {
+          const axiosError = err as AxiosError<ErrorResponse>;
 
-  };
+          if (axiosError.response?.status === 401) {
+            setError("Authentication failed. Please log in again.");
+            dispatch(logout());
+            localStorage.removeItem("user");
+          } else {
+            setError(axiosError.response?.data.message || "Failed to fetch user data. Please try again.");
+          }
+        } else {
+          setError("An unexpected error occurred.");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  fetchUserData();
-}, [token]);
-
+    fetchUserData();
+  }, [token]);
 
   const handleLogout = () => {
     dispatch(logout());
+    localStorage.removeItem("user");
   };
 
   return (
@@ -64,17 +85,33 @@ function Page() {
       ) : error ? (
         <Alert message="Error" description={error} type="error" showIcon />
       ) : (
-        <Card className="p-6 max-w-md w-full shadow-lg">
+        <Card className="p-6 max-w-3xl w-full shadow-lg">
           <Title level={2} className="text-center mb-4">
-            Welcome, {userData?.name || "User"}
+            Welcome, {userData?.firstName || "User"}
           </Title>
-          <Text>Email: {userData?.email}</Text>
-          <br />
-          <Text>Status: {userData?.isAuthenticated ? "Authenticated" : "Guest"}</Text>
-          <br />
-          <Button type="primary" onClick={handleLogout} className="mt-4">
-            Logout
-          </Button>
+          <Row gutter={[16, 16]}>
+            <Col span={12}>
+              <Card className="shadow-md p-4">
+                <Title level={4}>User Information</Title>
+                <Text strong>Username: </Text> {userData?.username}
+                <br />
+                <Text strong>Email: </Text> {userData?.email}
+                <br />
+                <Text strong>Full Name: </Text> {userData?.firstName} {userData?.lastName}
+              </Card>
+            </Col>
+            <Col span={12}>
+              <Card className="shadow-md p-4">
+                <Title level={4}>Account Details</Title>
+                <Statistic
+                  title="Points"
+                  value={userData?.Points}
+                  precision={0}
+                  valueStyle={{ color: '#3f8600' }}
+                />
+              </Card>
+            </Col>
+          </Row>
         </Card>
       )}
     </div>

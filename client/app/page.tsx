@@ -15,7 +15,7 @@ export default function Home() {
       console.log("Retrieved user:", user);
       dispatch(loginSuccess(user));
     }
-  }, [dispatch]);
+  }, []);
 
   return (
     <div className="p-6">

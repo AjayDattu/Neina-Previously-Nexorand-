@@ -2,23 +2,36 @@
 import { useState } from "react";
 import { Form, Input, Button, Card, Typography, message } from "antd";
 import { UserOutlined, MailOutlined, LockOutlined } from "@ant-design/icons";
-import axios from 'axios'; // You can use axios for API requests
+import axios from 'axios';
+import { loginStart, loginSuccess, loginFailure } from "../store/authSlice";
+import { useDispatch } from "react-redux";
+import { useRouter } from "next/navigation";
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const { Title } = Typography;
 
+interface RegisterValues {
+  firstName: string;
+  lastName: string;
+  username: string;
+  email: string;
+  password: string;
+}
+
 export default function Register() {
   const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch();
+  const router = useRouter();
 
-  const handleRegister = async (values) => {
+  const handleRegister = async (values: RegisterValues) => {
     setLoading(true);
-    console.log("Register form values:", values);
 
     try {
-      // Make your registration API call here
-      const response = await axios.post('http://localhost:7000/api/auth/v1/register', values);
-      console.log('Registration successful:', response.data);
+      // Register API call
+      await axios.post('http://localhost:7000/api/auth/v1/register', values);
       message.success('Registration successful!');
-      // You can redirect or perform other actions after successful registration here
+      handleLogin({ username: values.username, password: values.password });
     } catch (error) {
       console.error('Registration failed:', error);
       message.error('Registration failed. Please try again.');
@@ -26,8 +39,29 @@ export default function Register() {
       setLoading(false);
     }
   };
-return (
+
+  const handleLogin = async (credentials: { username: string; password: string }) => {
+    dispatch(loginStart());
+
+    try {
+      // Login API call
+      const response = await axios.post("http://localhost:7000/api/auth/v1/login", credentials);
+      const token = response.data.token;
+      const userData = { ...credentials, token };
+      
+      toast.success(`✅ Welcome back, ${credentials.username}!`);
+      localStorage.setItem("user", JSON.stringify(userData));
+      dispatch(loginSuccess(userData));
+      router.push("/");
+    } catch (error) {
+      dispatch(loginFailure());
+      toast.error("Login failed. Invalid username or password.");
+    }
+  };
+
+  return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
+      <ToastContainer />
       <Card className="p-6 max-w-md w-full shadow-lg">
         <Title level={2} className="text-center mb-4">Register</Title>
         <Form onFinish={handleRegister} layout="vertical">
