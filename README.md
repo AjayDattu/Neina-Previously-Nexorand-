@@ -20,7 +20,8 @@ This project is a responsive frontend application built with **Next.js**, **Redu
 1. **Clone the Frontend repository:**
    ```bash
    git clone https://github.com/AjayDattu/Neina-Previously-Nexorand-.gitS
-   cd leaderboard-app
+   cd Neina-Previously-Nexorand-.gitS
+   cd client
    npm intall
    npm run dev
 1. **Clone the Backend repository:**
