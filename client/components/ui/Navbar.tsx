@@ -1,12 +1,32 @@
 "use client";
-import Link from 'next/link';
-import { Button, Menu } from 'antd';
-import { useState } from 'react';
-import { LoginOutlined, LogoutOutlined } from '@ant-design/icons';
+import Link from "next/link";
+import { Button, Menu, Dropdown, Avatar } from "antd";
+import { useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { RootState } from "@/app/store/store";
+import { LoginOutlined, LogoutOutlined, UserOutlined } from "@ant-design/icons";
+import { logout } from "@/app/store/authSlice";
 
 const Navbar = () => {
-  // State to track if the user is logged in
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const dispatch = useDispatch();
+  const user = useSelector((state: RootState) => state.auth.user);
+  const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
+
+  const handleLogout = () => {
+    dispatch(logout());
+  };
+
+  // Dropdown menu items for the logged-in user
+  const menu = (
+    <Menu>
+      <Menu.Item key="profile">
+        <Link href="/Profile">Profile</Link>
+      </Menu.Item>
+      <Menu.Item key="logout" onClick={handleLogout} icon={<LogoutOutlined />}>
+        Logout
+      </Menu.Item>
+    </Menu>
+  );
 
   return (
     <nav className="shadow shadow-gray-300 w-full px-8 md:px-auto">
@@ -32,17 +52,22 @@ const Navbar = () => {
             </Menu.Item>
           </Menu>
         </div>
-        
-        {/* Login/Logout Button */}
-        <div className="order-2 md:order-3">
-          <Button
-            type="primary"
-            icon={isLoggedIn ? <LogoutOutlined /> : <LoginOutlined />}
 
-            className="flex items-center gap-2"
-          >
-            {isLoggedIn ? 'Logout' : 'Login'}
-          </Button>
+        {/* Login/Logout or Avatar with Dropdown */}
+        <div className="order-2 md:order-3">
+          {isAuthenticated ? (
+            <Dropdown overlay={menu} placement="bottomRight" trigger={["click"]}>
+              <Avatar size="large" icon={<UserOutlined />} style={{ cursor: "pointer" }} />
+            </Dropdown>
+          ) : (
+            <Button
+              type="primary"
+              icon={<LoginOutlined />}
+              className="flex items-center gap-2"
+            >
+              <Link href="/Login">Login</Link>
+            </Button>
+          )}
         </div>
       </div>
     </nav>
