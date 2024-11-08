@@ -54,7 +54,7 @@ const handleLogout = () => {
               <Link href="/About">About</Link>
             </Menu.Item>
             <Menu.Item key="contact">
-              <Link href="#">Contact</Link>
+              <Link href="/Contact">Contact</Link>
             </Menu.Item>
           </Menu>
         </div>
