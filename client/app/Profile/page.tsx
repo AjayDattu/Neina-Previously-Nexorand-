@@ -71,7 +71,7 @@ function Page() {
     };
 
     fetchUserData();
-  }, [token]);
+  }, []);
 
   const handleLogout = () => {
     dispatch(logout());
