@@ -31,6 +31,12 @@ function Page() {
     {},
     { headers: { Authorization: {token} } }
   );
+ const response = await axios.post('http://localhost:7000/api/user/v1/get-users-info', null, {
+        headers: {
+          'Content-Type': 'application/json', // Optional if not sending a body
+          'Authorization': `Bearer ${token}`, // Add token or other headers if needed
+        },
+      });
 
   // Handle response
   setUserData(response.data);
